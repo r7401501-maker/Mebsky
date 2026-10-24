@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Небесная почта</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#070a1b;--fg:#f1f2ff;--mut:#a3a9d0;--gold:#ffd98a;--rose:#ff9fb8;--dim:#7d89c9;--card:#0e122a;--line:rgba(255,255,255,.16)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden}
+body{background:radial-gradient(900px 600px at 20% 10%,#241a4d 0,transparent 60%),radial-gradient(800px 600px at 90% 80%,#10305a 0,transparent 60%),var(--bg)}
+header{position:fixed;left:0;right:0;top:0;padding:14px 18px 0;pointer-events:none}
+h1{margin:0;font-size:22px}
+header p{margin:6px 0 0;color:var(--mut);font-size:14px;line-height:1.4;max-width:420px}
+#sky{position:fixed;inset:0}
+svg{position:absolute;inset:0;width:100%;height:100%}
+svg line{stroke:rgba(163,177,255,.28);stroke-width:1;vector-effect:non-scaling-stroke}
+.st{position:absolute;transform:translate(-50%,-50%);width:76px;display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;color:var(--fg);font:inherit;cursor:pointer;padding:6px 0}
+.st i{width:16px;height:16px;border-radius:50%;background:var(--dim);box-shadow:0 0 14px 3px rgba(125,137,201,.55)}
+.st.o i{background:var(--gold);box-shadow:0 0 18px 6px rgba(255,217,138,.6)}
+.st span{font-size:13px;text-shadow:0 1px 6px #000;text-align:center}
+footer{position:fixed;left:0;right:0;bottom:0;padding:0 16px 16px;text-align:center;color:var(--mut);font-size:14px}
+#sh{position:fixed;inset:0;display:none;align-items:flex-end;justify-content:center;background:rgba(4,6,16,.6)}
+#sh.on{display:flex}
+.pan{width:100%;max-width:520px;max-height:80%;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:24px 24px 0 0;padding:20px 20px 24px}
+.pan h2{margin:0 0 4px;font-size:20px;color:var(--gold)}
+.pan small{display:block;color:var(--mut);margin-bottom:14px}
+.ltr{margin:0 0 10px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.04);line-height:1.5}
+.ltr em{display:block;margin-top:6px;font-style:normal;font-size:12px;color:var(--rose)}
+textarea{width:100%;min-height:84px;margin-top:8px;padding:12px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--fg);font:inherit;resize:none}
+.btn{font:inherit;font-size:15px;color:#070a1b;background:var(--gold);border:0;border-radius:999px;padding:11px 20px;margin:10px 8px 0 0;cursor:pointer}
+.btn.g{color:var(--fg);background:rgba(255,255,255,.08);border:1px solid var(--line)}
+#msg{margin-top:10px;font-size:14px;color:var(--rose)}
+</style>
+</head>
+<body>
+<header><h1>Небесная почта</h1><p>Каждая звезда это человек из группы. Золотая звезда значит, что ей уже пришли письма. Нажми на любую.</p></header>
+<div id="sky"><svg id="ln" viewBox="0 0 100 100" preserveAspectRatio="none"></svg></div>
+<footer id="cnt"></footer>
+<div id="sh"><div class="pan"><h2 id="pn"></h2><small id="ps"></small><div id="pl"></div>
+<textarea id="tx" maxlength="300" placeholder="Напиши тёплое слово. Автор нигде не указывается."></textarea>
+<button class="btn" id="go">Отправить письмо</button><button class="btn g" id="cl">Закрыть</button><div id="msg"></div></div></div>
+<script>
+const tg=window.Telegram&&Telegram.WebApp;if(tg){tg.ready();tg.expand();try{tg.setHeaderColor('#070a1b');tg.setBackgroundColor('#070a1b')}catch(e){}}
+const $=id=>document.getElementById(id),sky=$('sky'),ln=$('ln');
+const ERR={auth:'Открой карту через бота в Telegram.',member:'Писать могут только участники группы.',limit:'Лимит: 5 писем в час.',bad:'Напиши хотя бы пару слов.'};
+let people=[],letters=[],cur=null;
+function render(){
+  sky.querySelectorAll('.st').forEach(e=>e.remove());ln.innerHTML='';const N=people.length;
+  const pos=people.map((_,i)=>{const a=i*2.4+.6,r=Math.sqrt((i+.6)/N)*.4;return[50+r*Math.cos(a)*95,54+r*Math.sin(a)*78]});
+  const L=(a,b)=>ln.insertAdjacentHTML('beforeend','<line x1="'+pos[a][0]+'" y1="'+pos[a][1]+'" x2="'+pos[b][0]+'" y2="'+pos[b][1]+'"/>');
+  for(let i=0;i<N-1;i++)L(i,i+1);for(let i=0;i<N-3;i+=2)L(i,i+3);
+  people.forEach((n,i)=>{const b=document.createElement('button');b.className='st'+(letters.some(l=>l.to==n)?' o':'');b.style.left=pos[i][0]+'%';b.style.top=pos[i][1]+'%';
+    b.innerHTML='<i></i><span></span>';b.lastChild.textContent=n;b.onclick=()=>open(n);sky.appendChild(b)});
+  $('cnt').textContent='Писем на карте: '+letters.length;
+  if(cur&&$('sh').classList.contains('on'))fill();
+}
+function fill(){
+  const ls=letters.filter(l=>l.to==cur);$('pn').textContent=cur;$('ps').textContent='Писем: '+ls.length;const pl=$('pl');pl.innerHTML='';
+  ls.forEach(l=>{const d=document.createElement('div');d.className='ltr';d.textContent=l.text;const e=document.createElement('em');e.textContent='✦ От тайного отправителя';d.appendChild(e);pl.appendChild(d)});
+}
+function open(n){cur=n;$('msg').textContent='';fill();$('sh').classList.add('on')}
+$('cl').onclick=()=>$('sh').classList.remove('on');
+$('go').onclick=async()=>{
+  const text=$('tx').value.trim();$('go').disabled=true;
+  try{const r=await fetch('/api/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData:tg?tg.initData:'',to:cur,text})});
+    const j=await r.json();if(j.e){$('msg').textContent=ERR[j.e]||'Не получилось отправить.'}else{$('msg').textContent='Письмо ушло на проверку. Когда его одобрят, оно появится на карте.';$('tx').value='';if(tg&&tg.HapticFeedback)tg.HapticFeedback.notificationOccurred('success')}
+  }catch(e){$('msg').textContent='Нет связи. Попробуй ещё раз.'}
+  $('go').disabled=false;
+};
+async function pull(){try{const j=await (await fetch('/api/letters')).json();const ch=j.letters.length!=letters.length||j.people.join()!=people.join();people=j.people;letters=j.letters;if(ch)render()}catch(e){}}
+pull();setInterval(pull,30000);
+</script>
+</body>
+</html>
