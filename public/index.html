@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>Небесная почта</title>
+<title>Созвездие МЭБ</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 :root{--bg:#02040d;--fg:#e8ebff;--mut:#8e97c4;--gold:#f6d98f;--gold2:#e9a867;--rose:#f3a0bb;--star:#aebcff;--card:rgba(9,13,34,.94);--line:rgba(255,255,255,.11)}
@@ -90,8 +90,8 @@ textarea:focus{border-color:rgba(255,217,138,.6)}
 <div id="toast"></div>
 <div id="gate"><p id="gt"></p><button class="btn g" id="gc">Закрыть</button></div>
 <div id="sh"><div class="pan"><div class="grab"></div><h2 id="pn"></h2><small id="ps"></small><div id="pl"></div>
-<div id="cmp"><textarea id="tx" maxlength="300" placeholder="Напиши тёплое слово. Получатель не узнает автора, администратор видит, кто написал."></textarea><span id="cc">0/300</span>
-<button class="btn" id="go">Отправить письмо</button></div><button class="btn g" id="cl">Закрыть</button><div id="msg"></div></div></div>
+<div id="cmp"><textarea id="tx" maxlength="300" placeholder="Напиши тёплое слово. Получатель не узнает автора, администратор не увидит, кто написал."></textarea><span id="cc">0/300</span>
+<button class="btn" id="go">Отправить послание</button></div><button class="btn g" id="cl">Закрыть</button><div id="msg"></div></div></div>
 <script>
 const tg=window.Telegram&&Telegram.WebApp;
 if(tg){tg.ready();tg.expand();try{tg.setHeaderColor('#050818');tg.setBackgroundColor('#050818')}catch(e){}try{tg.disableVerticalSwipes&&tg.disableVerticalSwipes()}catch(e){}}
